@@ -32,6 +32,8 @@ const policies: SessionPolicies = {
 const connector = new ControllerConnector({
     policies,
     rpc: 'https://api.cartridge.gg/x/starknet/sepolia',
+    namespace: "gladiastark",
+    slot: "romt",
 })
 
 // Configure RPC provider

@@ -1,12 +1,12 @@
 "use client"
 import { useAccount, useExplorer } from '@starknet-react/core'
 import { useCallback, useState } from 'react'
-import { Button } from '@chakra-ui/react'
+import { StoneButton } from '../StoneButton'
 
-const ETH_CONTRACT =
+const MINT_CONTRACT =
     '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7'
 
-export const TransferEth = () => {
+export const MintNFT = () => {
     const [submitted, setSubmitted] = useState<boolean>(false)
     const { account } = useAccount()
     const explorer = useExplorer()
@@ -20,14 +20,14 @@ export const TransferEth = () => {
             try {
                 const result = await account.execute([
                     {
-                        contractAddress: ETH_CONTRACT,
+                        contractAddress: MINT_CONTRACT,
                         entrypoint: 'approve',
-                        calldata: [account?.address, amount, '0x0'],
+                        calldata: [account?.address, amount],
                     },
                     {
-                        contractAddress: ETH_CONTRACT,
-                        entrypoint: 'transfer',
-                        calldata: [account?.address, amount, '0x0'],
+                        contractAddress: MINT_CONTRACT,
+                        entrypoint: 'mint',
+                        calldata: [account?.address],
                     },
                 ])
                 setTxnHash(result.transaction_hash)
@@ -43,21 +43,21 @@ export const TransferEth = () => {
     if (!account) return null
 
     return (
-        <div className="transfer-container">
-            <Button onClick={() => execute('0x1C6BF52634000')} disabled={submitted}>
-                Transfer 0.005 ETH
-            </Button>
+        <div>
+            <StoneButton onClick={() => execute('0x1C6BF52634000')} >
+                Mint NFT
+            </StoneButton>
             {txnHash && (
-                <div className="transaction-info">
-                    Transaction hash:
+                <>
+                    Transaction hash:{' '}
                     <a
                         href={explorer.transaction(txnHash)}
-                        target="_blank"
+                        target="blank"
                         rel="noreferrer"
                     >
                         {txnHash}
                     </a>
-                </div>
+                </>
             )}
         </div>
     )
