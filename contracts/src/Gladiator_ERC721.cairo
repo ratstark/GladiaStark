@@ -9,6 +9,10 @@ mod Gladiator {
     use openzeppelin::token::common::erc2981::{DefaultConfig, ERC2981Component};
     use openzeppelin::token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use starknet::{ContractAddress, get_caller_address};
+    use core::starknet::storage::{
+        StoragePointerReadAccess, StoragePointerWriteAccess, StorageMapReadAccess,
+        StorageMapWriteAccess, Map,
+    };
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -35,6 +39,8 @@ mod Gladiator {
 
     #[storage]
     struct Storage {
+        id_counter: u128,
+        token_uris: Map<u256, ByteArray>,
         #[substorage(v0)]
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
@@ -62,7 +68,8 @@ mod Gladiator {
     fn constructor(
         ref self: ContractState, owner: ContractAddress, default_royalty_receiver: ContractAddress,
     ) {
-        self.erc721.initializer("Gladiator", "GLDK", "");
+        let base_uri: ByteArray = "https://white-worried-coral-590.mypinata.cloud/ipfs/";
+        self.erc721.initializer("Gladiator", "GLDK", base_uri);
         self.ownable.initializer(owner);
         self.erc2981.initializer(default_royalty_receiver, 0);
     }
@@ -76,21 +83,37 @@ mod Gladiator {
         }
 
         #[external(v0)]
-        fn safe_mint(
-            ref self: ContractState,
-            recipient: ContractAddress,
-            token_id: u256,
-            data: Span<felt252>,
-        ) {
+        fn mint(ref self: ContractState, recipient: ContractAddress, token_id: u256) {
             self.ownable.assert_only_owner();
-            self.erc721.safe_mint(recipient, token_id, data);
+            self.erc721.mint(recipient, token_id);
         }
 
         #[external(v0)]
-        fn safeMint(
-            ref self: ContractState, recipient: ContractAddress, tokenId: u256, data: Span<felt252>,
-        ) {
-            self.safe_mint(recipient, tokenId, data);
+        fn safeMint(ref self: ContractState, recipient: ContractAddress, uri: ByteArray) -> u256 {
+            self.id_counter.write(self.id_counter.read() + 1);
+            let token_id: u256 = self.id_counter.read().into();
+            self.mint(recipient, token_id);
+            self.set_token_uri(token_id, uri);
+            token_id
+        }
+    }
+
+    #[generate_trait]
+    impl InternalImpl of InternalTrait {
+        // token_uri custom implementation
+        fn _token_uri(self: @ContractState, token_id: u256) -> ByteArray {
+            assert(self.erc721.exists(token_id), ERC721Component::Errors::INVALID_TOKEN_ID);
+            let base_uri = self.erc721._base_uri();
+            if base_uri.len() == 0 {
+                Default::default()
+            } else {
+                let uri = self.token_uris.read(token_id);
+                format!("{}{}", base_uri, uri)
+            }
+        }
+        // ERC721URIStorage internal functions,
+        fn set_token_uri(ref self: ContractState, token_id: u256, uri: ByteArray) {
+            self.token_uris.write(token_id, uri);
         }
     }
 }

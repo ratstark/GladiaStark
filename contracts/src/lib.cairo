@@ -1,1 +1,1 @@
-mod Gladiator;
+mod Gladiator_ERC721;
