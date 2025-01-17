@@ -45,3 +45,5 @@ certificates
 
 #contracts
 contracts/target
+contracts/account.json
+contracts/keystore.json
