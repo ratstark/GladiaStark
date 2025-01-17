@@ -1,15 +1,23 @@
 "use client"
 import { useAccount, useConnect, useDisconnect } from '@starknet-react/core'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import ControllerConnector from '@cartridge/connector/controller'
-import { Button } from '@chakra-ui/react' // need to add to doc 
+import { StoneButton } from '../StoneButton'
 
 export function ConnectWallet() {
     const { connect, connectors } = useConnect()
     const { disconnect } = useDisconnect()
-    const { address } = useAccount()
+    const { address, connector } = useAccount()
     const controller = connectors[0] as ControllerConnector
     const [username, setUsername] = useState<string>()
+
+    const handleClick = useCallback(() => {
+        if (!controller) {
+            console.error("Connector not initialized");
+            return;
+        }
+        controller.controller.openProfile("inventory");
+    }, [connector])
 
     useEffect(() => {
         if (!address) return
@@ -18,18 +26,15 @@ export function ConnectWallet() {
 
     return (
         <div>
-            {address && (
-                <>
-                    <p>Account: {address}</p>
-                    {username && <p>Username: {username}</p>}
-                </>
-            )}
             {address ? (
-                <Button onClick={() => disconnect()}>Disconnect</Button>
+                <>
+                    <StoneButton onClick={() => disconnect()}>Disconnect</StoneButton>
+                    <StoneButton onClick={handleClick}>My account</StoneButton>
+                </>
             ) : (
-                <Button onClick={() => connect({ connector: controller })}>
+                <StoneButton onClick={() => connect({ connector: controller })}>
                     Connect
-                </Button>
+                </StoneButton>
             )}
         </div>
     )

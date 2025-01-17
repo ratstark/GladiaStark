@@ -1,21 +1,124 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    --gold: #ffd700;
+    --gold-glow: rgba(255, 215, 0, 0.2);
+    --crimson: #dc143c;
+    --crimson-dark: #8b0000;
+    --sand: #f4d03f;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(
+        180deg,
+        var(--crimson) 0%,
+        var(--crimson-dark) 100%
+    );
+    color: var(--gold);
+    font-family: "Inter", sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+.page-container {
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 3rem;
+    padding: 1rem;
+}
+
+.top-right {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+main {
+    background: linear-gradient(
+        180deg,
+        var(--crimson) 0%,
+        var(--crimson-dark) 100%
+    );
+    color: var(--gold);
+    font-family: "Inter", sans-serif;
+    overflow-x: hidden;
+}
+
+.roman-title {
+    font-family: "Cinzel", serif;
+}
+
+.stone-button {
+    background: linear-gradient(45deg, #2c2c2c, #1a1a1a);
+    border: 2px solid var(--gold);
+    position: relative;
+    overflow: hidden;
+}
+
+.stone-button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 215, 0, 0.2),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.stone-button:hover::before {
+    left: 100%;
+}
+
+.glow-text {
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.pixel-art {
+    image-rendering: pixelated;
+}
+
+@keyframes crowdWave {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+.crowd-animation {
+    animation: crowdWave 2s infinite ease-in-out;
+}
+
+@keyframes glowPulse {
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+.glow-pulse {
+    animation: glowPulse 2s infinite ease-in-out;
 }
