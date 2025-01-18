@@ -47,3 +47,5 @@ certificates
 contracts/target
 contracts/account.json
 contracts/keystore.json
+account-argent.json
+keystore-argent.json
