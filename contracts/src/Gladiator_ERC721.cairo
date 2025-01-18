@@ -7,7 +7,7 @@ mod Gladiator {
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::common::erc2981::{DefaultConfig, ERC2981Component};
-    use openzeppelin::token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
+    use openzeppelin::token::erc721::{ERC721Component, ERC721HooksEmptyImpl, interface::IERC721MetadataCamelOnly};
     use starknet::{ContractAddress, get_caller_address};
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StorageMapReadAccess,
@@ -20,8 +20,6 @@ mod Gladiator {
     component!(path: ERC2981Component, storage: erc2981, event: ERC2981Event);
 
     // External
-    #[abi(embed_v0)]
-    impl ERC721MixinImpl = ERC721Component::ERC721MixinImpl<ContractState>;
     #[abi(embed_v0)]
     impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
     #[abi(embed_v0)]
@@ -96,6 +94,19 @@ mod Gladiator {
             self.set_token_uri(token_id, uri);
             token_id
         }
+
+        #[external(v0)]
+        fn get_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
+            self.token_uris.read(token_id)
+        }
+    }
+
+    #[abi(embed_v0)]
+    impl WrappedIERC721MetadataCamelOnlyImpl of IERC721MetadataCamelOnly<ContractState> {
+        // Override tokenURI to use the internal ERC721URIStorage _token_uri function
+        fn tokenURI(self: @ContractState, tokenId: u256) -> ByteArray {
+            self._token_uri(tokenId)
+        }
     }
 
     #[generate_trait]
@@ -111,6 +122,7 @@ mod Gladiator {
                 format!("{}{}", base_uri, uri)
             }
         }
+        
         // ERC721URIStorage internal functions,
         fn set_token_uri(ref self: ContractState, token_id: u256, uri: ByteArray) {
             self.token_uris.write(token_id, uri);
