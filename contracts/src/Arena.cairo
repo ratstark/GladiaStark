@@ -4,6 +4,7 @@ pub trait IArena<T> {
     fn battle_round(ref self: T);
     fn entrance_payment(ref self: T, amount: u256);
     fn time_left(self: @T) -> u64;
+    fn getGladiator(self: @T, tokenId: u256);
 }
 
 #[starknet::contract]
@@ -84,6 +85,8 @@ mod Arena {
             //         - last gladiator -> renvoyé
 
             //         map créé [index, Struct {sender_address, Gladiator}]
+            self.entrance_payment(self.entry_fee.read());
+
             assert(true, '');
         }
 
@@ -103,6 +106,12 @@ mod Arena {
             let pool = self.pool_map.read(sender);
             self.pool_map.write(sender, pool + amount);
             self.total_pool.write(self.total_pool.read() + amount);
+        }
+
+        fn getGladiator(self: @ContractState, tokenId: u256) {
+            let gladiator = IGladiatorDispatcher { contract_address: get_contract_address() };
+            assert(gladiator.owner_of(tokenId) == get_caller_address(), "You are not the owner of this gladiator");
+            gladiator.safe_transfer_from(get_caller_address(), get_contract_address(), tokenId);
         }
 
         fn battle_round(ref self: ContractState) {}

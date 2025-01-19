@@ -4,14 +4,18 @@ use starknet::{ContractAddress};
 
 #[starknet::interface]
 pub trait IGladiator<ContractState> {
-    fn burn(self: @ContractState, token_id: u256);
-    fn mint(self: @ContractState, recipient: ContractAddress, token_id: u256);
-    fn safeMint(self: @ContractState, recipient: ContractAddress, uri: ByteArray) -> u256;
+    fn burn(ref self: ContractState, token_id: u256);
+    fn mint(ref self: ContractState, recipient: ContractAddress, token_id: u256);
+    fn safeMint(ref self: ContractState, recipient: ContractAddress, uri: ByteArray) -> u256;
     fn get_token_uri(self: @ContractState, token_id: u256) -> ByteArray;
+    fn owner_of(self: @ContractState, token_id: u256) -> ContractAddress;
+    fn safe_transfer_from(
+        ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u256,
+    );
 }
 
 #[starknet::contract]
-mod Gladiator {
+pub mod Gladiator {
     use core::num::traits::Zero;
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::introspection::src5::SRC5Component;
@@ -83,21 +87,17 @@ mod Gladiator {
         self.erc2981.initializer(default_royalty_receiver, 0);
     }
 
-    #[generate_trait]
-    #[abi(per_item)]
-    impl ExternalImpl of ExternalTrait {
-        #[external(v0)]
+    #[abi(embed_v0)]
+    impl IGladiatorImpl of super::IGladiator<ContractState> {
         fn burn(ref self: ContractState, token_id: u256) {
             self.erc721.update(Zero::zero(), token_id, get_caller_address());
         }
 
-        #[external(v0)]
         fn mint(ref self: ContractState, recipient: ContractAddress, token_id: u256) {
             self.ownable.assert_only_owner();
             self.erc721.mint(recipient, token_id);
         }
 
-        #[external(v0)]
         fn safeMint(ref self: ContractState, recipient: ContractAddress, uri: ByteArray) -> u256 {
             self.id_counter.write(self.id_counter.read() + 1);
             let token_id: u256 = self.id_counter.read().into();
@@ -106,9 +106,18 @@ mod Gladiator {
             token_id
         }
 
-        #[external(v0)]
         fn get_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             self.token_uris.read(token_id)
+        }
+
+        fn owner_of(self: @ContractState, token_id: u256) -> ContractAddress {
+            self.erc721._owner_of(token_id)
+        }
+
+        fn safe_transfer_from(
+            ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u256,
+        ) {
+            self.erc721.transfer(from, to, token_id);
         }
     }
 
