@@ -1,17 +1,13 @@
-use starknet::ContractAddress;
-// Asset IDs for price feeds
-const ETH_USD: felt252 = 19514442401534788; // ETH/USD to felt252
-const STRK_USD: felt252 = 6004514686061859652; // STRK/USD
-
 #[starknet::interface]
-trait IPragmaHelper<TContractState> {
+pub trait IPragmaHelper<TContractState> {
     fn get_asset_price(self: @TContractState, asset_id: felt252) -> u128;
     fn get_token_per_usd(self: @TContractState, asset_id: felt252) -> u128;
 }
 
 #[starknet::contract]
-mod PragmaHelper {
-    use super::{ContractAddress, IPragmaHelper};
+pub mod PragmaHelper {
+    use starknet::{ContractAddress};
+    use super::{IPragmaHelper};
     use pragma_lib::abi::{IPragmaABIDispatcher, IPragmaABIDispatcherTrait};
     use pragma_lib::types::{DataType, AggregationMode, PragmaPricesResponse};
     use core::starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};

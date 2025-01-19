@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts for Cairo ^0.20.0
+use starknet::{ContractAddress};
 
-
+#[starknet::interface]
+pub trait IGladiator<ContractState> {
+    fn burn(self: @ContractState, token_id: u256);
+    fn mint(self: @ContractState, recipient: ContractAddress, token_id: u256);
+    fn safeMint(self: @ContractState, recipient: ContractAddress, uri: ByteArray) -> u256;
+    fn get_token_uri(self: @ContractState, token_id: u256) -> ByteArray;
+}
 
 #[starknet::contract]
 mod Gladiator {
