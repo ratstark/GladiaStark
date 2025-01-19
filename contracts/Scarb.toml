@@ -4,10 +4,11 @@ version = "0.1.0"
 edition = "2024_07"
 
 [dependencies]
-starknet = "2.9.2"
+starknet = ">=2.9.2"
 # snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry", tag = "v0.31.0" }
 snforge_std = "0.35.1"
-openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.20.0" }
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", version = ">=0.20.0" }
+pragma_lib = { git = "https://github.com/astraly-labs/pragma-lib" }
 # openzeppelin_access = "0.20.0"
 # openzeppelin_token = "0.20.0"
 # openzeppelin_introspection = "0.20.0"

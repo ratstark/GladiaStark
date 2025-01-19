@@ -1,0 +1,5 @@
+[indexing]
+contracts = [
+  "erc721:0x03378dcd8e66d245468a57839d29c8a79347c76ea01afa19559ceab49b45fd6f"
+]
+# run this before slot deployments create gladiastark torii --world 0x3fa481f41522b90b3684ecfab7650c259a76387fab9c380b7a959e3d4ac69f --rpc https://starknet-sepolia.infura.io/v3/d023a81521634722ace57e134bf3170c --config ../torii-config.toml

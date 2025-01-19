@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts for Cairo ^0.20.0
 
+
+
 #[starknet::contract]
 mod Gladiator {
     use core::num::traits::Zero;
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::common::erc2981::{DefaultConfig, ERC2981Component};
-    use openzeppelin::token::erc721::{ERC721Component, ERC721HooksEmptyImpl, interface::IERC721MetadataCamelOnly};
+    use openzeppelin::token::erc721::{
+        ERC721Component, ERC721HooksEmptyImpl, interface::IERC721MetadataCamelOnly,
+    };
     use starknet::{ContractAddress, get_caller_address};
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StorageMapReadAccess,
@@ -122,7 +126,7 @@ mod Gladiator {
                 format!("{}{}", base_uri, uri)
             }
         }
-        
+
         // ERC721URIStorage internal functions,
         fn set_token_uri(ref self: ContractState, token_id: u256, uri: ByteArray) {
             self.token_uris.write(token_id, uri);

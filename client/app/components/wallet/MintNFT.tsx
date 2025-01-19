@@ -5,31 +5,68 @@ import { StoneButton } from '../StoneButton'
 
 const MINT_CONTRACT = '0x03378dcd8e66d245468a57839d29c8a79347c76ea01afa19559ceab49b45fd6f'
 
-const SuccessPopup = ({ onClose }: { onClose: () => void }) => (
+const SuccessPopup = ({ 
+    onClose,
+    error,
+    txnHash,
+    status,
+    isError,
+    receiptError,
+    explorer
+}: { 
+    onClose: () => void,
+    error?: string,
+    txnHash?: string,
+    status?: string,
+    isError?: boolean,
+    receiptError?: Error,
+    explorer: any
+}) => (
     <div style={{
         position: 'fixed',
         bottom: '20px',
         right: '20px',
-        background: '#4CAF50',
+        background: error || isError ? '#f44336' : '#4CAF50',
         color: 'white',
         padding: '1rem',
         borderRadius: '4px',
         boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-        zIndex: 1000
+        zIndex: 1000,
+        maxWidth: '400px'
     }}>
-        Transaction successful!
-        <button 
-            onClick={onClose}
-            style={{
-                marginLeft: '10px',
-                background: 'transparent',
-                border: 'none',
-                color: 'white',
-                cursor: 'pointer'
-            }}
-        >
-            ✕
-        </button>
+        <div style={{ marginBottom: '10px', display: 'flex', justifyContent: 'space-between' }}>
+            <span>{error || isError ? 'Transaction Failed' : 'Transaction successful!'}</span>
+            <button 
+                onClick={onClose}
+                style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'white',
+                    cursor: 'pointer'
+                }}
+            >
+                ✕
+            </button>
+        </div>
+        {error && (
+            <div style={{ marginTop: '10px' }}>
+                Error: {error}
+            </div>
+        )}
+        {txnHash && (
+            <div style={{ fontSize: '0.9em' }}>
+                <div>Status: {status}</div>
+                {isError && <div>Error: {receiptError?.message}</div>}
+                <a
+                    href={explorer.transaction(txnHash)}
+                    target="blank"
+                    rel="noreferrer"
+                    style={{ color: 'white', textDecoration: 'underline' }}
+                >
+                    View on Explorer
+                </a>
+            </div>
+        )}
     </div>
 )
 
@@ -40,14 +77,14 @@ export const MintNFT = () => {
     const { account } = useAccount()
     const explorer = useExplorer()
     const [txnHash, setTxnHash] = useState<string>()
-    
-    const { 
+
+    const {
         data: receipt,
         isError,
         error: receiptError,
         isPending,
         isSuccess,
-        status 
+        status
     } = useTransactionReceipt({
         hash: txnHash,
         watch: true,
@@ -92,7 +129,6 @@ export const MintNFT = () => {
     const buttonText = () => {
         if (submitted) return 'Submitting...'
         if (isPending && txnHash) return 'Processing...'
-        if (isSuccess) return 'Mint Another'
         return 'Mint NFT'
     }
 
@@ -101,30 +137,23 @@ export const MintNFT = () => {
     return (
         <div>
             <StoneButton
-                onClick={() => execute()}
+            onClick={() => execute()}
             >
-                {buttonText()}
+            {buttonText()}
             </StoneButton>
-            {error && (
-                <div style={{ color: 'red', marginTop: '10px' }}>
-                    Error: {error}
-                </div>
-            )}
-            {txnHash && (
-                <div>
-                    Status: {status}
-                    {isError && <div style={{ color: 'red' }}>Error: {receiptError?.message}</div>}
-                    <a
-                        href={explorer.transaction(txnHash)}
-                        target="blank"
-                        rel="noreferrer"
-                    >
-                        View on Explorer
-                    </a>
-                </div>
-            )}
-            {showSuccess && (
-                <SuccessPopup onClose={() => setShowSuccess(false)} />
+            
+            {(showSuccess || error || txnHash) && (
+                <SuccessPopup 
+                    onClose={() => {
+                        setShowSuccess(false)
+                        setError(undefined)
+                    }}
+                    error={error}
+                    txnHash={txnHash}
+                    status={status}
+                    isError={isError}
+                    explorer={explorer}
+                />
             )}
         </div>
     )

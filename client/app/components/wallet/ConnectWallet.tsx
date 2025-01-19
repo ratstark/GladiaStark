@@ -11,16 +11,13 @@ export function ConnectWallet() {
     const controller = connectors[0] as ControllerConnector
     const [username, setUsername] = useState<string>()
 
-    const openInventory = useCallback(() => {
-        try {
-            if (!controller?.controller) {
-                throw new Error("Controller not initialized");
-            }
-            controller.controller.openProfile("inventory");
-        } catch (error) {
-            console.error("Failed to open inventory:", error);
+    const handleClick = useCallback(() => {
+        if (!controller) {
+            console.error("Connector not initialized");
+            return;
         }
-    }, [controller])
+        controller.controller.openProfile("inventory");
+    }, [connector])
 
     useEffect(() => {
         if (!address) return
@@ -32,7 +29,7 @@ export function ConnectWallet() {
             {address ? (
                 <>
                     <StoneButton onClick={() => disconnect()}>Disconnect</StoneButton>
-                    <StoneButton onClick={openInventory}>Inventory</StoneButton>
+                    <StoneButton onClick={handleClick}>My account</StoneButton>
                 </>
             ) : (
                 <StoneButton onClick={() => connect({ connector: controller })}>
