@@ -1,11 +1,12 @@
 #[starknet::interface]
 pub trait IArena<T> {
     fn enter_arena(ref self: T, tokenId: u256);
-    fn battle_round(ref self: T);
     fn entrance_payment(ref self: T, amount: u256);
     fn time_left(self: @T) -> u64;
+    fn battle_round(ref self: T);
     fn getGladiator(ref self: T, tokenId: u256);
     fn start_season(ref self: T);
+    fn get_price_entry_eth(ref self: T) -> u128;
 }
 
 #[starknet::contract]
@@ -14,11 +15,11 @@ mod Arena {
     use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StorageMapReadAccess,
-        StorageMapWriteAccess, Map, Vec, MutableVecTrait,
+        StorageMapWriteAccess, Map, Vec
     };
     use gladiastark::Gladiator_ERC721::{IGladiatorDispatcher};
     use gladiastark::helper::PragmaHelper::{IPragmaHelperDispatcher, IPragmaHelperDispatcherTrait};
-    use gladiastark::helper::RandomnessHelper::{IRandomnessDispatcher, IRandomnessDispatcherTrait};
+    use gladiastark::helper::RandomnessHelper::{IRandomnessDispatcher};
     use super::IArena;
 
     const ETH_USD: felt252 = 19514442401534788; // ETH/USD to felt252
@@ -75,7 +76,7 @@ mod Arena {
         }
         fn start_season(ref self: ContractState) {
             assert!(self.time_left() == 0, "Season as started");
-            while self.time_left() == 0 {
+            while self.current_count.read() > 1 {
                 self.battle_round();
             }
         }
@@ -110,8 +111,10 @@ mod Arena {
             let gladiator2Id = self.random_dispatcher.read().get_random_fighter(self.current_count.read()).into();
             if self.random_dispatcher.read().get_random_number() % 2 == 0 {
                 self.gladiators.at(gladiator1Id).read().burn();
+                self.current_count.write(self.current_count.read() - 1);
             } else {
                 self.gladiators.at(gladiator2Id).read().burn();
+                self.current_count.write(self.current_count.read() - 1);
             }
             
         }
@@ -123,6 +126,9 @@ mod Arena {
                 return 0;
             }
             return deadline - current_time;
+        }
+        fn get_price_entry_eth(ref self: ContractState) -> u128 {
+            self.price_eth.read() 
         }
     }
 }

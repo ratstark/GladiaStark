@@ -4,10 +4,6 @@ import { FightButton } from './components/FightButton'
 
 export default function Home() {
 
-  const handleClick = () => {
-    window.location.href = '/arena';
-  };
-
   return (
     <StarknetProvider>
       <main className="min-h-screen">

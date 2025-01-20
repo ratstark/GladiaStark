@@ -15,17 +15,14 @@ pub mod PragmaHelper {
     #[storage]
     struct Storage {
         pragma_contract: ContractAddress,
-        summary_stats: ContractAddress,
     }
 
     #[constructor]
     fn constructor(
         ref self: ContractState,
         pragma_address: ContractAddress,
-        summary_stats_address: ContractAddress,
     ) {
         self.pragma_contract.write(pragma_address);
-        self.summary_stats.write(summary_stats_address);
     }
 
     #[abi(embed_v0)]
