@@ -5,6 +5,8 @@ import { StoneButton } from '../components/StoneButton'
 import { ConnectWallet } from '../components/wallet/ConnectWallet'
 import { MintNFT } from '../components/wallet/MintNFT'
 import { StarknetProvider } from '../components/wallet/StarknetProvider'
+import { EnterArena } from '../components/wallet/EnterArena'
+import { PriceFeed } from '../components/wallet/PriceFeed'
 
 export default function Arena() {
 
@@ -23,9 +25,8 @@ export default function Arena() {
                         <StoneButton onClick={handleStats}>
                             Stats
                         </StoneButton>
-                        <StoneButton>
-                            Play
-                        </StoneButton>
+                        <EnterArena />
+                        <PriceFeed />
                     </div>
                 </div>
             </div>

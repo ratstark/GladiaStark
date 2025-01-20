@@ -3,7 +3,7 @@ import { useAccount, useExplorer, useTransactionReceipt } from '@starknet-react/
 import { useCallback, useState, useEffect } from 'react'
 import { StoneButton } from '../StoneButton'
 
-const MINT_CONTRACT = '0x03378dcd8e66d245468a57839d29c8a79347c76ea01afa19559ceab49b45fd6f'
+const ARENA_CONTRACT = '0x03378dcd8e66d245468a57839d29c8a79347c76ea01afa19559ceab49b45fd6f'
 
 const SuccessPopup = ({ 
     onClose,
@@ -70,7 +70,7 @@ const SuccessPopup = ({
     </div>
 )
 
-export const MintNFT = () => {
+export const EnterArena = () => {
     const [submitted, setSubmitted] = useState<boolean>(false)
     const [showSuccess, setShowSuccess] = useState(false)
     const [error, setError] = useState<string>()
@@ -107,9 +107,9 @@ export const MintNFT = () => {
             try {
                 const result = await account.execute([
                     {
-                        contractAddress: MINT_CONTRACT,
-                        entrypoint: 'safeMint',
-                        calldata: [account?.address, "bafkreiejcsdzrsytzejjjv5k2v6ecsdb3dzyn4xsdbmd2a2e7irlfnvseq"],
+                        contractAddress: ARENA_CONTRACT,
+                        entrypoint: 'enter_arena',
+                        calldata: [account?.address, 11],
                     }
                 ])
                 if (!result?.transaction_hash) {
@@ -118,7 +118,7 @@ export const MintNFT = () => {
                 setTxnHash(result.transaction_hash)
             } catch (e) {
                 console.error(e)
-                setError(e instanceof Error ? e.message : "Transaction failed")
+                setError(e instanceof Error ? e.message : "Failed to enter arena")
             } finally {
                 setSubmitted(false)
             }
@@ -127,9 +127,9 @@ export const MintNFT = () => {
     )
 
     const buttonText = () => {
-        if (submitted) return 'Submitting...'
+        if (submitted) return 'Entering...'
         if (isPending && txnHash) return 'Processing...'
-        return 'Mint NFT'
+        return 'Enter Arena'
     }
 
     if (!account) return null
@@ -137,9 +137,9 @@ export const MintNFT = () => {
     return (
         <div>
             <StoneButton
-            onClick={() => execute()}
+                onClick={() => execute()}
             >
-            {buttonText()}
+                {buttonText()}
             </StoneButton>
             
             {(showSuccess || error || txnHash) && (

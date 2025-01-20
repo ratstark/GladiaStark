@@ -5,20 +5,18 @@
 @tailwind utilities;
 
 :root {
-    --gold: #ffd700;
-    --gold-glow: rgba(255, 215, 0, 0.2);
-    --crimson: #dc143c;
-    --crimson-dark: #8b0000;
-    --sand: #f4d03f;
+    --primary: #3b2d2a;
+    --light: #e1e1da;
+    --accent: #e69f67;
+    --blue: #2c78a2;
+    --dark: #262625;
+    --gray: #737480;
+    --light-gray: #c8c9da;
 }
 
 body {
-    background: linear-gradient(
-        180deg,
-        var(--crimson) 0%,
-        var(--crimson-dark) 100%
-    );
-    color: var(--gold);
+    background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
+    color: var(--light);
     font-family: "Inter", sans-serif;
     overflow-x: hidden;
     min-height: 100vh;
@@ -27,6 +25,7 @@ body {
 .page-container {
     min-height: 100vh;
     padding: 1rem;
+    background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
 }
 
 .content-container {
@@ -46,12 +45,8 @@ body {
 }
 
 main {
-    background: linear-gradient(
-        180deg,
-        var(--crimson) 0%,
-        var(--crimson-dark) 100%
-    );
-    color: var(--gold);
+    background: linear-gradient(180deg, var(--primary) 0%, var(--dark) 100%);
+    color: var(--light);
     font-family: "Inter", sans-serif;
     overflow-x: hidden;
 }
@@ -61,8 +56,8 @@ main {
 }
 
 .stone-button {
-    background: linear-gradient(45deg, #2c2c2c, #1a1a1a);
-    border: 2px solid var(--gold);
+    background: linear-gradient(45deg, var(--dark), var(--primary));
+    border: 2px solid var(--accent);
     position: relative;
     overflow: hidden;
 }
@@ -77,7 +72,7 @@ main {
     background: linear-gradient(
         90deg,
         transparent,
-        rgba(255, 215, 0, 0.2),
+        rgba(230, 159, 103, 0.2),
         transparent
     );
     transition: 0.5s;
@@ -88,7 +83,7 @@ main {
 }
 
 .glow-text {
-    text-shadow: 0 0 10px var(--gold-glow);
+    text-shadow: 0 0 10px var(--blue);
 }
 
 .pixel-art {

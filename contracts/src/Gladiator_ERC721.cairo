@@ -1,13 +1,30 @@
 // SPDX-License-Identifier: MIT
 // Compatible with OpenZeppelin Contracts for Cairo ^0.20.0
+use starknet::{ContractAddress};
+
+#[starknet::interface]
+pub trait IGladiator<T> {
+    fn burn(ref self: T, token_id: u256);
+    fn mint(ref self: T, recipient: ContractAddress, token_id: u256);
+    fn safeMint(ref self: T, recipient: ContractAddress, uri: ByteArray) -> u256;
+    fn get_token_uri(self: @T, token_id: u256) -> ByteArray;
+    fn owner_of(self: @T, token_id: u256) -> ContractAddress;
+    fn safe_transfer_from(
+        ref self: T, from: ContractAddress, to: ContractAddress, token_id: u256,
+    );
+    fn _token_uri(self: @T, token_id: u256) -> ByteArray;
+    fn set_token_uri(ref self: T, token_id: u256, uri: ByteArray);
+}
 
 #[starknet::contract]
-mod Gladiator {
+pub mod Gladiator {
     use core::num::traits::Zero;
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::common::erc2981::{DefaultConfig, ERC2981Component};
-    use openzeppelin::token::erc721::{ERC721Component, ERC721HooksEmptyImpl, interface::IERC721MetadataCamelOnly};
+    use openzeppelin::token::erc721::{
+        ERC721Component, ERC721HooksEmptyImpl, interface::IERC721MetadataCamelOnly,
+    };
     use starknet::{ContractAddress, get_caller_address};
     use core::starknet::storage::{
         StoragePointerReadAccess, StoragePointerWriteAccess, StorageMapReadAccess,
@@ -72,21 +89,17 @@ mod Gladiator {
         self.erc2981.initializer(default_royalty_receiver, 0);
     }
 
-    #[generate_trait]
-    #[abi(per_item)]
-    impl ExternalImpl of ExternalTrait {
-        #[external(v0)]
+    #[abi(embed_v0)]
+    impl GladiatorImpl of super::IGladiator<ContractState> {
         fn burn(ref self: ContractState, token_id: u256) {
             self.erc721.update(Zero::zero(), token_id, get_caller_address());
         }
 
-        #[external(v0)]
         fn mint(ref self: ContractState, recipient: ContractAddress, token_id: u256) {
             self.ownable.assert_only_owner();
             self.erc721.mint(recipient, token_id);
         }
 
-        #[external(v0)]
         fn safeMint(ref self: ContractState, recipient: ContractAddress, uri: ByteArray) -> u256 {
             self.id_counter.write(self.id_counter.read() + 1);
             let token_id: u256 = self.id_counter.read().into();
@@ -95,23 +108,19 @@ mod Gladiator {
             token_id
         }
 
-        #[external(v0)]
         fn get_token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             self.token_uris.read(token_id)
         }
-    }
 
-    #[abi(embed_v0)]
-    impl WrappedIERC721MetadataCamelOnlyImpl of IERC721MetadataCamelOnly<ContractState> {
-        // Override tokenURI to use the internal ERC721URIStorage _token_uri function
-        fn tokenURI(self: @ContractState, tokenId: u256) -> ByteArray {
-            self._token_uri(tokenId)
+        fn owner_of(self: @ContractState, token_id: u256) -> ContractAddress {
+            self.erc721._owner_of(token_id)
         }
-    }
 
-    #[generate_trait]
-    impl InternalImpl of InternalTrait {
-        // token_uri custom implementation
+        fn safe_transfer_from(
+            ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u256,
+        ) {
+            self.erc721.transfer(from, to, token_id);
+        }
         fn _token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             assert(self.erc721.exists(token_id), ERC721Component::Errors::INVALID_TOKEN_ID);
             let base_uri = self.erc721._base_uri();
@@ -122,10 +131,18 @@ mod Gladiator {
                 format!("{}{}", base_uri, uri)
             }
         }
-        
+
         // ERC721URIStorage internal functions,
         fn set_token_uri(ref self: ContractState, token_id: u256, uri: ByteArray) {
             self.token_uris.write(token_id, uri);
+        }
+    }
+
+    #[abi(embed_v0)]
+    impl WrappedIERC721MetadataCamelOnlyImpl of IERC721MetadataCamelOnly<ContractState> {
+        // Override tokenURI to use the internal ERC721URIStorage _token_uri function
+        fn tokenURI(self: @ContractState, tokenId: u256) -> ByteArray {
+            self._token_uri(tokenId)
         }
     }
 }
