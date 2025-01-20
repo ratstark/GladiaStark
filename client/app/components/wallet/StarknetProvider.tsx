@@ -66,6 +66,8 @@ const connector = new ControllerConnector({
     rpc: 'https://api.cartridge.gg/x/starknet/sepolia',
     namespace: "gladiastark",
     slot: "gladiastark",
+    preset: "blob-arena",
+
 })
 
 // Configure RPC provider
