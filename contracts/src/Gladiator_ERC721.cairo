@@ -3,15 +3,17 @@
 use starknet::{ContractAddress};
 
 #[starknet::interface]
-pub trait IGladiator<ContractState> {
-    fn burn(ref self: ContractState, token_id: u256);
-    fn mint(ref self: ContractState, recipient: ContractAddress, token_id: u256);
-    fn safeMint(ref self: ContractState, recipient: ContractAddress, uri: ByteArray) -> u256;
-    fn get_token_uri(self: @ContractState, token_id: u256) -> ByteArray;
-    fn owner_of(self: @ContractState, token_id: u256) -> ContractAddress;
+pub trait IGladiator<T> {
+    fn burn(ref self: T, token_id: u256);
+    fn mint(ref self: T, recipient: ContractAddress, token_id: u256);
+    fn safeMint(ref self: T, recipient: ContractAddress, uri: ByteArray) -> u256;
+    fn get_token_uri(self: @T, token_id: u256) -> ByteArray;
+    fn owner_of(self: @T, token_id: u256) -> ContractAddress;
     fn safe_transfer_from(
-        ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u256,
+        ref self: T, from: ContractAddress, to: ContractAddress, token_id: u256,
     );
+    fn _token_uri(self: @T, token_id: u256) -> ByteArray;
+    fn set_token_uri(ref self: T, token_id: u256, uri: ByteArray);
 }
 
 #[starknet::contract]
@@ -88,7 +90,7 @@ pub mod Gladiator {
     }
 
     #[abi(embed_v0)]
-    impl IGladiatorImpl of super::IGladiator<ContractState> {
+    impl GladiatorImpl of super::IGladiator<ContractState> {
         fn burn(ref self: ContractState, token_id: u256) {
             self.erc721.update(Zero::zero(), token_id, get_caller_address());
         }
@@ -119,19 +121,6 @@ pub mod Gladiator {
         ) {
             self.erc721.transfer(from, to, token_id);
         }
-    }
-
-    #[abi(embed_v0)]
-    impl WrappedIERC721MetadataCamelOnlyImpl of IERC721MetadataCamelOnly<ContractState> {
-        // Override tokenURI to use the internal ERC721URIStorage _token_uri function
-        fn tokenURI(self: @ContractState, tokenId: u256) -> ByteArray {
-            self._token_uri(tokenId)
-        }
-    }
-
-    #[generate_trait]
-    impl InternalImpl of InternalTrait {
-        // token_uri custom implementation
         fn _token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             assert(self.erc721.exists(token_id), ERC721Component::Errors::INVALID_TOKEN_ID);
             let base_uri = self.erc721._base_uri();
@@ -146,6 +135,14 @@ pub mod Gladiator {
         // ERC721URIStorage internal functions,
         fn set_token_uri(ref self: ContractState, token_id: u256, uri: ByteArray) {
             self.token_uris.write(token_id, uri);
+        }
+    }
+
+    #[abi(embed_v0)]
+    impl WrappedIERC721MetadataCamelOnlyImpl of IERC721MetadataCamelOnly<ContractState> {
+        // Override tokenURI to use the internal ERC721URIStorage _token_uri function
+        fn tokenURI(self: @ContractState, tokenId: u256) -> ByteArray {
+            self._token_uri(tokenId)
         }
     }
 }
